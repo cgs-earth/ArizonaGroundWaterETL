@@ -1,0 +1,10 @@
+Code_Tables/
+Data_Tables/
+*.zip
+Shape
+*.pdf
+GWSI_README.txt
+
+.env
+
+__pycache__/
