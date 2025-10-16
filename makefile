@@ -10,3 +10,6 @@ deps:
 
 gen:
 	uv run src/main.py
+
+dump:
+	PGPASSWORD="changeMe" pg_dump -h localhost -U postgres -d edr -F c -b -v -f edr_backup.dump

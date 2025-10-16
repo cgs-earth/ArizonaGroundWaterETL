@@ -8,3 +8,5 @@ GWSI_README.txt
 .env
 
 __pycache__/
+
+*.dump
