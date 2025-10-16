@@ -1,12 +1,18 @@
 import datetime
+import math
 import os
 import json
+from typing import Optional
 import geopandas as gpd
 from pathlib import Path
 from dotenv import load_dotenv
 import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
+import psycopg2
+
+from db import DB, row_to_json
+from mapping import is_timeseries_dataset
 
 # Load environment variables
 load_dotenv()
@@ -26,118 +32,91 @@ def get_shapefile(shapefile_path: Path) -> gpd.GeoDataFrame:
     return gdf
 
 
-def merge(left: pd.DataFrame, right: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
-    left_key = left.columns[0]  # first column in left DF
+def merge(left: gpd.GeoDataFrame, right: pd.DataFrame) -> gpd.GeoDataFrame:
+    firstCol_left, firstCol_right = left.columns[0], right.columns[0]
+    left[firstCol_left] = left[firstCol_left].astype(str)
+    right[firstCol_right] = right[firstCol_right].astype(str)
+    merged = left.merge(
+        right, how="left", left_on=firstCol_left, right_on=firstCol_right
+    )
+    # don't include the merged index column since it is redundant
+    # and will be the same as the left index
+    merged = merged.drop(columns=[firstCol_right])
+    # Ensure merged result stays a GeoDataFrame
+    if not isinstance(merged, gpd.GeoDataFrame):
+        merged = gpd.GeoDataFrame(merged, geometry=left.geometry, crs=left.crs)
+    return merged
 
-    # Ensure both columns are the same type (string)
-    left[left_key] = left[left_key].astype(str)
-    right["SITE_ID"] = right["SITE_ID"].astype(str)
-
-    return right.merge(left, how="inner", left_on="SITE_ID", right_on=left_key)
 
 
 def glob_xlsx():
     shapes = get_shapefile(Path(__file__).parent.parent / "Shape")
     data_dir = Path(__file__).parent.parent / "Data_Tables"
+
+    merged_df: Optional[gpd.GeoDataFrame] = None
+    db = DB()
     for file in os.listdir(data_dir):
         if not file.endswith(".xlsx"):
             continue
+        
         df = pd.read_excel(data_dir / file)
+        print(f"Processing {file}...")
+        is_timeseries, dataset_def = is_timeseries_dataset(file)
 
-        merged_df = merge(df, shapes)
-        post_to_postgis(merged_df)
+        if is_timeseries:
+            assert dataset_def is not None
+            firstCol = df.columns[0]  # location column
+            timeCol = dataset_def.time_field
+
+            # Ensure all locations exist
+            # Convert to string for consistency
+            df[firstCol] = df[firstCol].astype(str)
+            with db.engine.connect() as conn:
+                existing_loc_names = {
+                    row['name']
+                    for row in conn.execute(
+                        text("SELECT location_id, name FROM edr_quickstart.locations")
+                    ).mappings()
+                }
+
+                        
+            new_locs = set(df[firstCol]) - existing_loc_names
+            for loc_name in new_locs:
+                # Insert a barebones location (no geometry available)
+                db.insert_location(
+                    name=loc_name,
+                    properties=json.dumps({}),  # empty properties
+                    geometry_wkt="POINT(0 0)"  # placeholder
+                )
+
+            for field in dataset_def.timeseries_fields:
+                db.insert_parameter(
+                    name=field, 
+                    symbol=field,
+                    label=field,
+                )
+                df["_PARAM_NAME"] = field
+                db.insert_observations_from_df(
+                    df=df,
+                    location_id_col=firstCol,
+                    parameter_col="_PARAM_NAME",
+                    value_col=field,
+                    time_col=timeCol
+                )
 
 
-def ensure_postgis_geometry_crs(
-    engine, schema: str, table: str, geom_column="geometry", srid=4326
-):
-    """
-    Alters an existing table's geometry column to have the correct SRID if needed.
-    """
-    with engine.begin() as conn:
-        result = conn.execute(
-            text(f"""
-            SELECT f_geometry_column, srid 
-            FROM geometry_columns 
-            WHERE f_table_schema='{schema}' 
-              AND f_table_name='{table}' 
-              AND f_geometry_column='{geom_column}';
-            """)
-        ).fetchone()
-
-        if result is None:
-            # Geometry column doesn't exist; GeoPandas will create it
-            return
-
-        current_srid = result[1]
-        if current_srid != srid:
-            print(
-                f"Altering {schema}.{table}.{geom_column} SRID from {current_srid} to {srid}"
-            )
-            conn.execute(
-                text(f"""
-                ALTER TABLE {schema}.{table} 
-                ALTER COLUMN {geom_column} TYPE geometry(Geometry, {srid})
-                USING ST_Transform({geom_column}, {srid});
-                """)
-            )
-
-
-def post_to_postgis(df: gpd.GeoDataFrame, schema="edr_quickstart", table="locations"):
-    """
-    Inserts a GeoDataFrame into a PostGIS table, converting CRS to EPSG:4326 and handling existing table SRID.
-    """
-    host = os.environ.get("POSTGRES_HOST")
-    db = os.environ.get("POSTGRES_DB")
-    user = os.environ.get("POSTGRES_USER")
-    password = os.environ.get("POSTGRES_PASSWORD")
-
-    if not all([host, db, user, password]):
-        raise ValueError("Missing PostgreSQL connection info in environment variables")
-
-    engine = create_engine(f"postgresql+psycopg2://{user}:{password}@{host}/{db}")
-
-    # Ensure GeoDataFrame CRS
-    if df.crs is None:
-        raise ValueError("GeoDataFrame has no CRS defined")
-    df = df.to_crs(epsg=4326)
-
-    # Ensure PostGIS table geometry column is correct SRID
-    ensure_postgis_geometry_crs(
-        engine, schema=schema, table=table, geom_column="geometry", srid=4326
-    )
-
-    # Prepare data
-    id_col = df.columns[0]
-    df_copy = df.copy()
-
-    # Build properties JSONB safely
-    props_cols = [c for c in df_copy.columns if c not in [id_col, "geometry"]]
-
-    def serialize_for_json(obj):
-        if isinstance(obj, (pd.Timestamp, datetime.datetime)):
-            return obj.isoformat()
-        elif isinstance(obj, (pd.Timedelta,)):
-            return str(obj)
         else:
-            return obj
+            if merged_df is None:
+                # Start with shapes as GeoDataFrame
+                merged_df = merge(shapes, df)
+                assert merged_df.crs is not None
+                firstColName = merged_df.columns[0]
+                for index, row in merged_df.iterrows():
+                    db.insert_location(
+                        name=row[firstColName],
+                        properties=row_to_json(row),
+                        geometry_wkt=row["geometry"].wkt,
+                    )
+            db.update_location_properties(df=df)
 
-    def row_to_json(row):
-        return json.dumps({k: serialize_for_json(v) for k, v in row.to_dict().items()})
-
-    df_copy["properties"] = df_copy[props_cols].apply(row_to_json, axis=1)
-
-    # Keep only id, properties, geometry
-    df_copy = df_copy[[id_col, "properties", "geometry"]]
-
-    # Rename id column to 'name' for locations table
-    df_copy = df_copy.rename(columns={id_col: "name"})
-
-
-    try:
-        df_copy.to_postgis(
-            name=table, con=engine, schema=schema, if_exists="append", index=False
-        )
-        print(f"Inserted {len(df_copy)} rows into {schema}.{table}")
-    except SQLAlchemyError as e:
-        print(f"Error inserting into PostGIS: {e}")
+            assert merged_df is not None

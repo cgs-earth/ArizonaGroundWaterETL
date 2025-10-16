@@ -9,6 +9,19 @@ dependencies = [
     "geopandas>=1.1.1",
     "openpyxl>=3.1.5",
     "pandas>=2.3.3",
+    "pgedr>=0.1.0",
     "psycopg2>=2.9.11",
     "python-dotenv>=1.1.1",
 ]
+
+[dependency-groups]
+dev = [
+    "pygeoapi>=0.21.0",
+]
+
+[tool.uv.sources]
+pygeoapi = { git = "https://github.com/internetofwater/pygeoapi.git", rev="6239cc0e82119bb0c1db22c25ed8442df8d090b4" }
+pgedr = {git = "https://github.com/internetofwater/pgedr.git", rev="main"}
+
+[tool.uv.workspace]
+members = ["packages/*"]
