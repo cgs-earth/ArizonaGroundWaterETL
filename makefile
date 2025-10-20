@@ -7,9 +7,13 @@ dev:
 deps:
 	uv sync --all-groups --locked --all-packages
 
+# move the data into the database
+load_xlsx:
+	uv run src/main.py --xlsx
 
-gen:
-	uv run src/main.py
+add_metadata:
+	uv run src/main.py --wells55
 
+# generate a sql dump of the data itself
 dump:
 	PGPASSWORD="changeMe" pg_dump -h localhost -U postgres -d edr -F c -b -v -f edr_backup.dump

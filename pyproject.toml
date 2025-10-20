@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "gdal>=3.11.4",
     "geoalchemy2>=0.18.0",
     "geopandas>=1.1.1",
     "openpyxl>=3.1.5",

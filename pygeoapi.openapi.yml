@@ -98,7 +98,7 @@ components:
       name: resourceId
       required: true
       schema:
-        default: az_groundwater
+        default: wells_55
         type: string
     skipGeometry:
       description: This option can be used to skip response geometries for each feature.
@@ -335,8 +335,6 @@ paths:
           items:
             enum:
             - location_id
-            - name
-            - description
             - properties
             type: string
           type: array
@@ -348,20 +346,6 @@ paths:
       - explode: false
         in: query
         name: location_id
-        required: false
-        schema:
-          type: integer
-        style: form
-      - explode: false
-        in: query
-        name: name
-        required: false
-        schema:
-          type: string
-        style: form
-      - explode: false
-        in: query
-        name: description
         required: false
         schema:
           type: string
@@ -493,7 +477,8 @@ paths:
       parameters:
       - *id003
       - $ref: '#/components/parameters/f'
-      - description: The profile to be applied to a given request
+      - &id005
+        description: The profile to be applied to a given request
         explode: false
         in: query
         name: profile
@@ -536,6 +521,601 @@ paths:
       summary: Get Arizona Groundwater schema
       tags:
       - az_groundwater
+  /collections/wells_55:
+    get:
+      description: Arizona Wells 55
+      operationId: describeWells_55Collection
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/Collection
+        '400':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Arizona Wells 55 metadata
+      tags:
+      - wells_55
+  /collections/wells_55/items:
+    get:
+      description: Arizona Wells 55
+      operationId: getWells_55Features
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      - $ref: '#/components/parameters/bbox'
+      - description: The optional limit parameter limits the number of items that
+          are presented in the response document (maximum=10000, default=500).
+        explode: false
+        in: query
+        name: limit
+        required: false
+        schema:
+          default: 500
+          maximum: 10000
+          minimum: 1
+          type: integer
+        style: form
+      - $ref: '#/components/parameters/crs'
+      - $ref: '#/components/parameters/bbox-crs'
+      - &id004
+        description: The properties that should be included for each feature. The
+          parameter value is a comma-separated list of property names.
+        explode: false
+        in: query
+        name: properties
+        required: false
+        schema:
+          items:
+            enum:
+            - PROGRAM
+            - REGISTRY_I
+            - OWNER_NAME
+            - RGR_PUMP_D
+            - WELLTYPE
+            - WELL_TYPE_
+            - DLIC_NUM
+            - APPROVED
+            - INSTALLED
+            - WELL_DEPTH
+            - WATER_LEVE
+            - CASING_DEP
+            - CASING_DIA
+            - CASING_TYP
+            - PUMP_TYPE
+            - PUMP_POWER
+            - PUMPRATE
+            - TESTEDRATE
+            - DRAW_DOWN
+            - COMPLETION
+            - DRILL_LOG
+            - WELL_CANCE
+            - CADASTRAL
+            - COUNTY
+            - WATERSHED
+            - BASIN_NAME
+            - SUBBASIN_N
+            - AMA
+            - QUAD_CODE
+            - WHOLE_TOWN
+            - HALF_TOWNS
+            - NORTHSOUTH
+            - WHOLE_RANG
+            - HALF_RANGE
+            - EASTWEST
+            - SECTION
+            - QUARTER_16
+            - QACRE160DI
+            - QUARTER_40
+            - QACRE40DIR
+            - QUARTER_10
+            - QACRE10DIR
+            - UTM_X_METE
+            - UTM_Y_METE
+            - APPLICATIO
+            - ADDRESS1
+            - ADDRESS2
+            - CITY
+            - STATE
+            - ZIP
+            - ZIP4
+            - WATER_USE
+            - SITE_USE
+            type: string
+          type: array
+        style: form
+      - $ref: '#/components/parameters/vendorSpecificParameters'
+      - $ref: '#/components/parameters/skipGeometry'
+      - $ref: https://raw.githubusercontent.com/opengeospatial/ogcapi-records/master/core/openapi/parameters/sortby.yaml
+      - $ref: '#/components/parameters/offset'
+      - explode: false
+        in: query
+        name: PROGRAM
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: REGISTRY_I
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: OWNER_NAME
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: RGR_PUMP_D
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: WELLTYPE
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: WELL_TYPE_
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: DLIC_NUM
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: APPROVED
+        required: false
+        schema:
+          type: date
+        style: form
+      - explode: false
+        in: query
+        name: INSTALLED
+        required: false
+        schema:
+          type: date
+        style: form
+      - explode: false
+        in: query
+        name: WELL_DEPTH
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: false
+        in: query
+        name: WATER_LEVE
+        required: false
+        schema:
+          type: number
+        style: form
+      - explode: false
+        in: query
+        name: CASING_DEP
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: false
+        in: query
+        name: CASING_DIA
+        required: false
+        schema:
+          type: number
+        style: form
+      - explode: false
+        in: query
+        name: CASING_TYP
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: PUMP_TYPE
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: PUMP_POWER
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: PUMPRATE
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: false
+        in: query
+        name: TESTEDRATE
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: false
+        in: query
+        name: DRAW_DOWN
+        required: false
+        schema:
+          type: integer
+        style: form
+      - explode: false
+        in: query
+        name: COMPLETION
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: DRILL_LOG
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: WELL_CANCE
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: CADASTRAL
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: COUNTY
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: WATERSHED
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: BASIN_NAME
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: SUBBASIN_N
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: AMA
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: QUAD_CODE
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: WHOLE_TOWN
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: HALF_TOWNS
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: NORTHSOUTH
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: WHOLE_RANG
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: HALF_RANGE
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: EASTWEST
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: SECTION
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: QUARTER_16
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: QACRE160DI
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: QUARTER_40
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: QACRE40DIR
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: QUARTER_10
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: QACRE10DIR
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: UTM_X_METE
+        required: false
+        schema:
+          type: number
+        style: form
+      - explode: false
+        in: query
+        name: UTM_Y_METE
+        required: false
+        schema:
+          type: number
+        style: form
+      - explode: false
+        in: query
+        name: APPLICATIO
+        required: false
+        schema:
+          type: date
+        style: form
+      - explode: false
+        in: query
+        name: ADDRESS1
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: ADDRESS2
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: CITY
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: STATE
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: ZIP
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: ZIP4
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: WATER_USE
+        required: false
+        schema:
+          type: string
+        style: form
+      - explode: false
+        in: query
+        name: SITE_USE
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        '200':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/Features
+        '400':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Arizona Wells 55 items
+      tags:
+      - wells_55
+    options:
+      description: Arizona Wells 55
+      operationId: optionsWells_55Features
+      responses:
+        '200':
+          description: options response
+      summary: Options for Arizona Wells 55 items
+      tags:
+      - wells_55
+    post:
+      description: Arizona Wells 55
+      operationId: getCQL2Wells_55Features
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: https://schemas.opengis.net/cql2/1.0/cql2.json
+        description: Get items with CQL2
+        required: true
+      responses:
+        '200':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/Features
+        '400':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '500':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Arizona Wells 55 items with CQL2
+      tags:
+      - wells_55
+  /collections/wells_55/items/{featureId}:
+    get:
+      description: Arizona Wells 55
+      operationId: getWells_55Feature
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/featureId
+      - $ref: '#/components/parameters/crs'
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/Feature
+        '400':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Arizona Wells 55 item by id
+      tags:
+      - wells_55
+    options:
+      description: Arizona Wells 55
+      operationId: optionsWells_55Feature
+      parameters:
+      - $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/featureId
+      responses:
+        '200':
+          description: options response
+      summary: Options for Arizona Wells 55 item by id
+      tags:
+      - wells_55
+  /collections/wells_55/queryables:
+    get:
+      description: Arizona Wells 55
+      operationId: getWells_55Queryables
+      parameters:
+      - *id004
+      - $ref: '#/components/parameters/f'
+      - *id005
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          $ref: '#/components/responses/Queryables'
+        '400':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Arizona Wells 55 queryables
+      tags:
+      - wells_55
+  /collections/wells_55/schema:
+    get:
+      description: Arizona Wells 55
+      operationId: getWells_55Schema
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          $ref: '#/components/responses/Queryables'
+        '400':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: https://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Arizona Wells 55 schema
+      tags:
+      - wells_55
   /conformance:
     get:
       description: API conformance definition
@@ -572,7 +1152,7 @@ paths:
       description: Cancel / delete job
       operationId: deleteJob
       parameters:
-      - &id004
+      - &id006
         description: job identifier
         in: path
         name: jobId
@@ -593,7 +1173,7 @@ paths:
       description: Retrieve job details
       operationId: getJob
       parameters:
-      - *id004
+      - *id006
       - $ref: '#/components/parameters/f'
       responses:
         '200':
@@ -610,7 +1190,7 @@ paths:
       description: Retrieve job results
       operationId: getJobResults
       parameters:
-      - *id004
+      - *id006
       - $ref: '#/components/parameters/f'
       responses:
         '200':
@@ -660,6 +1240,8 @@ tags:
     description: information
     url: https://github.com/internetofwater/reference.geoconnex.us
   name: server
+- description: Arizona Wells 55
+  name: wells_55
 - description: Arizona Groundwater
   name: az_groundwater
 - name: coverages

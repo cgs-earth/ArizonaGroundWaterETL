@@ -53,6 +53,29 @@ metadata:
 
 resources:
 
+  wells_55:
+    type: collection
+    title:
+      en: Arizona Wells 55
+    description:
+      en: Arizona Wells 55
+    keywords:
+      en:
+        - example
+        - quickstart
+    extents:
+      spatial:
+        bbox: [-180, -90, 180, 90]
+        crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84
+    providers:
+        - type: feature
+          name: OGR
+          data:
+            source_type: ESRI Shapefile
+            source: WellRegistry/WellRegistry20251020.shp
+          id_field: REGISTRY_I
+          layer: WellRegistry20251020
+
   az_groundwater:
     type: collection
     title:

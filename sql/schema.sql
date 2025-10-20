@@ -12,10 +12,7 @@ ALTER SCHEMA edr_quickstart OWNER TO postgres;
 
 -- Generic "locations" table that represents monitoring locations
 CREATE TABLE edr_quickstart.locations (
-    location_id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-
+    location_id VARCHAR(50) PRIMARY KEY,
     -- allow for custom properties; useful for bringing in data from external sources
     -- and preserving any custom fields
     properties JSONB,
@@ -35,7 +32,7 @@ CREATE TABLE edr_quickstart.parameters (
 -- Generic "observations" table that represents timeseries observations
 CREATE TABLE edr_quickstart.observations (
     observation_id SERIAL PRIMARY KEY,
-    location_id INT NOT NULL REFERENCES edr_quickstart.locations(location_id),
+    location_id VARCHAR(50) NOT NULL REFERENCES edr_quickstart.locations(location_id),
     parameter_id VARCHAR(50) NOT NULL REFERENCES edr_quickstart.parameters(parameter_id),
     observation_value DOUBLE PRECISION,
     observation_time TIMESTAMP WITH TIME ZONE NOT NULL,

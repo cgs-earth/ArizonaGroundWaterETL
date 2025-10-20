@@ -25,6 +25,7 @@ name = "arizonaetl"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "gdal" },
     { name = "geoalchemy2" },
     { name = "geopandas" },
     { name = "openpyxl" },
@@ -41,6 +42,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "gdal", specifier = ">=3.11.4" },
     { name = "geoalchemy2", specifier = ">=0.18.0" },
     { name = "geopandas", specifier = ">=1.1.1" },
     { name = "openpyxl", specifier = ">=3.1.5" },
@@ -427,6 +429,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/dc/6d/cfe3c0fcc5e477df2
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ec/f9/7f9263c5695f4bd0023734af91bedb2ff8209e8de6ead162f35d8dc762fd/flask-3.1.2-py3-none-any.whl", hash = "sha256:ca1d8112ec8a6158cc29ea4858963350011b5c846a414cdb7a954aa9e967d03c", size = 103308 },
 ]
+
+[[package]]
+name = "gdal"
+version = "3.11.4"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/62/e0/1840d476bfd2d1e8c22dacb612027a16ad1dfba60d5d4379bdaaf6a1545f/gdal-3.11.4.tar.gz", hash = "sha256:c28cd5ffda3df98555e21083d922762b0a095d8f10292e2ec60ee0d55651d74a", size = 878351 }
 
 [[package]]
 name = "geoalchemy2"

@@ -40,30 +40,6 @@ timeseries_datasets = [
             "PSI",
         ],
     ),
-    DatasetDef(
-        file="GWSI_TRANSDUCER_LEVELS.csv",
-        time_field="WLWA_MEASUREMENT_DATE",
-        timeseries_fields=[
-            "WLWA_DEPTH_TO_WATER",
-            "PSI",
-        ],
-    ),
-    DatasetDef(
-        file="GWSI_TRANSDUCER_LEVELS.csv",
-        time_field="WLWA_MEASUREMENT_DATE",
-        timeseries_fields=[
-            "WLWA_DEPTH_TO_WATER",
-            "PSI",
-        ],
-    ),
-    DatasetDef(
-        file="GWSI_WELL_LIFTS.csv",
-        time_field="WLLI_ENTRY_DATE",
-        timeseries_fields=[
-            "WLWA_DEPTH_TO_WATER",
-            "PSI",
-        ],
-    ),
 ]
 
 def is_timeseries_dataset(file: str) -> Tuple[bool, DatasetDef | None]:

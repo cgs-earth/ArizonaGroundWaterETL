@@ -1,5 +1,3 @@
-import datetime
-import math
 import os
 import json
 from typing import Optional
@@ -7,11 +5,10 @@ import geopandas as gpd
 from pathlib import Path
 from dotenv import load_dotenv
 import pandas as pd
-from sqlalchemy import create_engine, text
-from sqlalchemy.exc import SQLAlchemyError
-import psycopg2
+from sqlalchemy import text
 
 from db import DB, row_to_json
+from lib import get_all_wells_55_metadata
 from mapping import is_timeseries_dataset
 
 # Load environment variables
@@ -49,17 +46,20 @@ def merge(left: gpd.GeoDataFrame, right: pd.DataFrame) -> gpd.GeoDataFrame:
 
 
 
-def glob_xlsx():
+def load_xlsx_files():
     shapes = get_shapefile(Path(__file__).parent.parent / "Shape")
     data_dir = Path(__file__).parent.parent / "Data_Tables"
 
     merged_df: Optional[gpd.GeoDataFrame] = None
     db = DB()
     for file in os.listdir(data_dir):
-        if not file.endswith(".xlsx"):
+        if not file.endswith(".xlsx") and not file.endswith(".csv"):
             continue
-        
-        df = pd.read_excel(data_dir / file)
+        if file.endswith(".xlsx"):
+            df = pd.read_excel(data_dir / file)
+        else:
+            df = pd.read_csv(data_dir / file)
+
         print(f"Processing {file}...")
         is_timeseries, dataset_def = is_timeseries_dataset(file)
 
@@ -72,26 +72,25 @@ def glob_xlsx():
             # Convert to string for consistency
             df[firstCol] = df[firstCol].astype(str)
             with db.engine.connect() as conn:
-                existing_loc_names = {
-                    row['name']
+                existing_loc_ids = {
+                    row['location_id']
                     for row in conn.execute(
-                        text("SELECT location_id, name FROM edr_quickstart.locations")
+                        text("SELECT location_id FROM edr_quickstart.locations")
                     ).mappings()
                 }
 
-                        
-            new_locs = set(df[firstCol]) - existing_loc_names
+            new_locs = set(df[firstCol]) - existing_loc_ids
             for loc_name in new_locs:
                 # Insert a barebones location (no geometry available)
                 db.insert_location(
-                    name=loc_name,
+                    location_id=loc_name,
                     properties=json.dumps({}),  # empty properties
                     geometry_wkt="POINT(0 0)"  # placeholder
                 )
 
             for field in dataset_def.timeseries_fields:
                 db.insert_parameter(
-                    name=field, 
+                    parameter_id=field, 
                     symbol=field,
                     label=field,
                 )
@@ -111,12 +110,22 @@ def glob_xlsx():
                 merged_df = merge(shapes, df)
                 assert merged_df.crs is not None
                 firstColName = merged_df.columns[0]
-                for index, row in merged_df.iterrows():
+                for _, row in merged_df.iterrows():
                     db.insert_location(
-                        name=row[firstColName],
+                        location_id=row[firstColName],
                         properties=row_to_json(row),
                         geometry_wkt=row["geometry"].wkt,
                     )
             db.update_location_properties(df=df)
 
             assert merged_df is not None
+
+def add_wells_55_metadata():
+    db = DB()
+
+    for feature in get_all_wells_55_metadata():
+        print("Adding wells55 metadata for", feature["id"])
+        assert feature["geometry"]["type"] == "Point"
+        assert len(feature["geometry"]["coordinates"]) == 2
+        longitude, latitude = feature["geometry"]["coordinates"]
+        db.add_wells_55_metadata(feature["id"], feature["properties"], longitude, latitude)
