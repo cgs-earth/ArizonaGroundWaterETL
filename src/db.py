@@ -241,7 +241,7 @@ class DB():
     ):
         """
         Append WELLS_55_ prefixed properties to an existing location's properties if a location
-        exists with a matching REGISTRY_ID in its properties JSONB. If no such location exists,
+        exists with a matching REG_ID in its properties JSONB. If no such location exists,
         create a new one with these properties.
         """
         # Prepare new properties with prefix
@@ -253,18 +253,18 @@ class DB():
         new_properties_json = json.dumps(new_properties)
 
         with self.engine.begin() as conn:
-            # Try to find a location where properties->>'REGISTRY_ID' matches the provided reg_id
+            # Try to find a location where properties->>'REG_ID' matches the provided reg_id
             existing = conn.execute(
                 text("""
                     SELECT location_id, properties
                     FROM edr_quickstart.locations
-                    WHERE properties->>'REGISTRY_ID' = :reg_id
+                    WHERE properties->>'REG_ID' = :reg_id
                 """),
                 {"reg_id": reg_id},
             ).fetchone()
 
             if existing:
-                # Merge properties (PostgreSQL JSONB merge)
+                print(f"A location with the same registry id {reg_id} already exists, updating...")
                 conn.execute(
                     text("""
                         UPDATE edr_quickstart.locations
@@ -278,7 +278,7 @@ class DB():
                 assert longitude and latitude, (
                     "You must specify a geometry for a new location"
                 )
-
+                print(f"Creating new location with registry id {reg_id} and using that as the location_id...")
                 conn.execute(
                     text("""
                         INSERT INTO edr_quickstart.locations (location_id, properties, geometry)

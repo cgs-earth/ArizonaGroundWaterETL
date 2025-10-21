@@ -10,3 +10,5 @@ GWSI_README.txt
 __pycache__/
 
 WellRegistry/
+
+*.dump

@@ -121,11 +121,15 @@ def load_xlsx_files():
             assert merged_df is not None
 
 def add_wells_55_metadata():
+    seenID = set()
     db = DB()
-
     for feature in get_all_wells_55_metadata():
         print("Adding wells55 metadata for", feature["id"])
+        if feature["id"] in seenID:
+            print(f"Duplicate ID {feature['id']} in wells55 metadata. Skipping it")
+            continue
         assert feature["geometry"]["type"] == "Point"
         assert len(feature["geometry"]["coordinates"]) == 2
         longitude, latitude = feature["geometry"]["coordinates"]
         db.add_wells_55_metadata(feature["id"], feature["properties"], longitude, latitude)
+        seenID.add(feature["id"])
