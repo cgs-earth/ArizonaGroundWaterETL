@@ -128,7 +128,7 @@ class DB():
         with self.engine.begin() as conn:
             conn.execute(text(sql))
 
-    def insert_parameter(self, parameter_id: str, symbol: str, label: str) -> None:
+    def insert_parameter(self, parameter_id: str, unit_symbol: str, unit_label: str) -> None:
         """
         Inserts a parameter into the edr_quickstart.parameters table.
         Generates a unique parameter_id.
@@ -143,8 +143,8 @@ class DB():
                 {
                     "parameter_id": parameter_id,
                     "parameter_name": parameter_id,
-                    "parameter_unit_symbol": symbol,
-                    "parameter_unit_label": label,
+                    "parameter_unit_symbol": unit_symbol,
+                    "parameter_unit_label": unit_label,
                 },
             )
 
@@ -167,7 +167,7 @@ class DB():
             time_col: column location_id with observation times (datetime)
         """
         if df.empty:
-            return
+            raise ValueError("DataFrame is empty")
 
         # Ensure datetime
         df[time_col] = pd.to_datetime(df[time_col], errors="coerce")
@@ -175,7 +175,7 @@ class DB():
         # Drop rows with missing required fields
         df = df.dropna(subset=[location_id_col, parameter_col, value_col, time_col])
         if df.empty:
-            return
+            raise ValueError("DataFrame has no valid observations after dropping missing values")
 
         with self.engine.begin() as conn:
             # Fetch mapping of location location_ids -> location_id

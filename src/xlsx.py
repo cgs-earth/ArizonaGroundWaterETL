@@ -1,33 +1,17 @@
 import os
 import json
 from typing import Optional
-import geopandas as gpd
 from pathlib import Path
 from dotenv import load_dotenv
 import pandas as pd
 from sqlalchemy import text
-
+import geopandas as gpd
 from db import DB, row_to_json
-from lib import get_all_wells_55_metadata
+from lib import get_all_wells_55_metadata, get_shapefile
 from mapping import is_timeseries_dataset
 
 # Load environment variables
 load_dotenv()
-
-
-def get_shapefile(shapefile_path: Path) -> gpd.GeoDataFrame:
-    gdf = gpd.read_file(shapefile_path)
-
-    # Ensure IDs are strings for reliable joining
-    gdf["SITE_ID"] = gdf["SITE_ID"].astype(str)
-    gdf = gdf.drop_duplicates(subset="SITE_ID")
-
-    # Convert to EPSG:4326 to standardize
-    if gdf.crs is None:
-        raise ValueError("Shapefile has no CRS defined")
-    gdf = gdf.to_crs(epsg=4326)
-    return gdf
-
 
 def merge(left: gpd.GeoDataFrame, right: pd.DataFrame) -> gpd.GeoDataFrame:
     firstCol_left, firstCol_right = left.columns[0], right.columns[0]
@@ -47,8 +31,8 @@ def merge(left: gpd.GeoDataFrame, right: pd.DataFrame) -> gpd.GeoDataFrame:
 
 
 def load_xlsx_files():
-    shapes = get_shapefile(Path(__file__).parent.parent / "Shape")
-    data_dir = Path(__file__).parent.parent / "Data_Tables"
+    shapes = get_shapefile(Path(__file__).parent.parent / "GWSI_ZIP" / "Shape")
+    data_dir = Path(__file__).parent.parent / "GWSI_ZIP" / "Data_Tables"
 
     merged_df: Optional[gpd.GeoDataFrame] = None
     db = DB()
@@ -65,12 +49,12 @@ def load_xlsx_files():
 
         if is_timeseries:
             assert dataset_def is not None
-            firstCol = df.columns[0]  # location column
+            locationIDColumn = df.columns[0]  # location column
             timeCol = dataset_def.time_field
 
             # Ensure all locations exist
             # Convert to string for consistency
-            df[firstCol] = df[firstCol].astype(str)
+            df[locationIDColumn] = df[locationIDColumn].astype(str)
             with db.engine.connect() as conn:
                 existing_loc_ids = {
                     row['location_id']
@@ -79,7 +63,7 @@ def load_xlsx_files():
                     ).mappings()
                 }
 
-            new_locs = set(df[firstCol]) - existing_loc_ids
+            new_locs = set(df[locationIDColumn]) - existing_loc_ids
             for loc_name in new_locs:
                 # Insert a barebones location (no geometry available)
                 db.insert_location(
@@ -90,16 +74,16 @@ def load_xlsx_files():
 
             for field in dataset_def.timeseries_fields:
                 db.insert_parameter(
-                    parameter_id=field, 
-                    symbol=field,
-                    label=field,
+                    parameter_id=field.id, 
+                    unit_symbol=field.unit_symbol,
+                    unit_label=f"{field.id} ({field.unit_name}) {field.unit_description})",
                 )
-                df["_PARAM_NAME"] = field
+                df["_PARAM_NAME"] = field.id
                 db.insert_observations_from_df(
                     df=df,
-                    location_id_col=firstCol,
+                    location_id_col=locationIDColumn,
                     parameter_col="_PARAM_NAME",
-                    value_col=field,
+                    value_col=field.id,
                     time_col=timeCol
                 )
 
@@ -121,9 +105,10 @@ def load_xlsx_files():
             assert merged_df is not None
 
 def add_wells_55_metadata():
-    seenID = set()
+    seenID: set[str] = set()
     db = DB()
-    for feature in get_all_wells_55_metadata():
+    all_features = get_all_wells_55_metadata()
+    for feature in all_features:
         print("Adding wells55 metadata for", feature["id"])
         if feature["id"] in seenID:
             print(f"Duplicate ID {feature['id']} in wells55 metadata. Skipping it")
