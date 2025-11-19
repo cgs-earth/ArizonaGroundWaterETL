@@ -29,5 +29,6 @@ restore:
 push_to_registry:
 	oras push ghcr.io/cgs-earth/arizona-groundwater-dump:latest  edr_backup.dump:application/octet-stream --username internetofwater --password ${PERSONAL_ACCESS_TOKEN}
 
-check_locations_with_joined_wells_metadata:
+check_locations_with_joined_wells_metadata
+	# assuming that the join was done properly this will show multiple location ids 
 	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr -c "SELECT location_id FROM edr_quickstart.locations WHERE char_length(location_id) > 7 AND EXISTS (SELECT 1 FROM jsonb_object_keys(properties) AS key WHERE key LIKE 'WELLS_55%');"
