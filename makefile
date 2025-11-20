@@ -23,11 +23,18 @@ backup:
 restore:
 	PGPASSWORD="changeMe" psql -h localhost -U postgres -c "DROP DATABASE IF EXISTS edr;"
 	PGPASSWORD="changeMe" psql -h localhost -U postgres -c "CREATE DATABASE edr;"
-	PGPASSWORD="changeMe" pg_restore -h localhost -U postgres -d edr edr_backup.dump
+	PGPASSWORD="changeMe" pg_restore -h localhost -U postgres -d edr -j 8 edr_backup.dump
 
 # push the data backup to ghcr.io
 push_to_registry:
 	oras push ghcr.io/cgs-earth/arizona-groundwater-dump:latest  edr_backup.dump:application/octet-stream --username internetofwater --password ${PERSONAL_ACCESS_TOKEN}
 
 check_locations_with_joined_wells_metadata:
+	# assuming that the join was done properly this will show multiple location ids 
 	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr -c "SELECT location_id FROM edr_quickstart.locations WHERE char_length(location_id) > 7 AND EXISTS (SELECT 1 FROM jsonb_object_keys(properties) AS key WHERE key LIKE 'WELLS_55%');"
+
+check_units:
+	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr -c "SELECT * FROM edr_quickstart.parameters ORDER BY parameter_id LIMIT 5;"
+
+login:
+	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr

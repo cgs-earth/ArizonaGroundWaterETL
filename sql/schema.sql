@@ -26,7 +26,7 @@ CREATE TABLE edr_quickstart.parameters (
     parameter_name VARCHAR NOT NULL,
     
     parameter_unit_symbol VARCHAR(50),
-    parameter_unit_label VARCHAR(255)
+    parameter_unit_label VARCHAR(600)
 );
 
 -- Generic "observations" table that represents timeseries observations

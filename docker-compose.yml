@@ -1,7 +1,8 @@
 services:
   
   database:
-    image: postgis/postgis:14-3.2-alpine
+    image: postgis/postgis:17-3.6-alpine
+    platform: linux/amd64
     env_file:
       - .env
     ports:
