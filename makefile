@@ -36,5 +36,11 @@ check_locations_with_joined_wells_metadata:
 check_units:
 	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr -c "SELECT * FROM edr_quickstart.parameters ORDER BY parameter_id LIMIT 5;"
 
+check_ww_levels:
+	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr -c "SELECT * FROM edr_quickstart.observations WHERE parameter_id = 'WLWA_DEPTH_TO_WATER' LIMIT 5;"
+
+check_ww_level_observations_by_location:
+	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr -c "SELECT location_id, COUNT(*) AS observation_count FROM edr_quickstart.observations WHERE parameter_id = 'WLWA_DEPTH_TO_WATER' AND observation_value IS NOT NULL GROUP BY location_id HAVING COUNT(*) > 1 ORDER BY observation_count DESC;"
+
 login:
 	PGPASSWORD="changeMe" psql -h localhost -U postgres -d edr

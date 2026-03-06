@@ -108,6 +108,24 @@ timeseries_datasets = [
             ),
         ],
     ),
+    DatasetDef(
+        file="GWSI_WW_LEVELS.xlsx",
+        time_field="WLWA_MEASUREMENT_DATE",
+        timeseries_fields=[
+            TimeseriesFieldDef(
+                id="WLWA_WATER_LEVEL_ELEVATION",
+                unit_description="records elevation of the water table above vertical datum. This field is calculated by subtracting the depth to water from the well altitude as entered in the GWSI_SITES table. Except for flowing wells, water level elevations are blank for records that have no depth to water measurements.This field is automatically populated by Oracle when a depth to water measurement is entered",
+                unit_name="Feet",
+                unit_symbol="ft",
+            ),
+            TimeseriesFieldDef(
+                id="WLWA_DEPTH_TO_WATER",
+                unit_description="records the depth to water in feet below land surface. Depth to water can be carried out to two decimal places. If the water level is above land surface, enter the water level in feet above land surface preceded by a minus sign (- ).  If the head at a flowing site is unknown, the water level cannot be measured, the site is dry, or the well is destroyed, this field is left blank and the appropriate code must be placed in the associated WLWA_REMARKS field.",
+                unit_name="Feet",
+                unit_symbol="ft",
+            ),
+        ],
+    ),
 ]
 
 def is_timeseries_dataset(file: str) -> Tuple[bool, DatasetDef | None]:
